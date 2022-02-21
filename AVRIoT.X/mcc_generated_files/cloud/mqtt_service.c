@@ -34,7 +34,7 @@
 #include "../debug_print.h"
 #include "../config/cloud_config.h"
 
-char awsEndpoint[AWS_ENDPOINT_LEN];
+char mosquittoEndpoint[MOSQUITTO_ENDPOINT_LEN];
 char cid[MQTT_CID_LENGTH];
 static publishReceptionHandler_t *publishRecvInfo;
 
@@ -148,6 +148,7 @@ void MQTT_CLIENT_connect(void)
 	cloudConnectPacket.connectVariableHeader.connectFlagsByte.All = 0x02;
 	cloudConnectPacket.connectVariableHeader.keepAliveTimer = 10;
 	cloudConnectPacket.clientID = (uint8_t*)cid;
+	// TODO: Why did the other guys hardcode the password and username here?
     // Set the subscription callback handler here
     MQTT_SetPublishReceptionCallback(manageSubscriptionMessage);
 	MQTT_CreateConnectPacket(&cloudConnectPacket);

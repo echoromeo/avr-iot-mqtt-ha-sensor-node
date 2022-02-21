@@ -33,7 +33,7 @@
 
 
 extern char cid[];
-extern char awsEndpoint[];
+extern char mosquittoEndpoint[];
 
 // The call back table prototype for sending the payload received as part of  
 // PUBLISH packet to the correct publish reception handler function defined in     

@@ -30,6 +30,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "../utils/compiler.h"
 #include "../drivers/uart.h"
 #include <avr/wdt.h>
 #include "../include/usart2.h"
@@ -182,7 +183,9 @@ static void set_wifi_auth(char *ssid_pwd_auth)
     uint8_t params = 0;
     uint8_t i;
     
-    for(i=0;i<=2;i++)credentials[i]='\0';
+    for(i=0;i<=2;i++) {
+	    credentials[i] = NULL;
+    }
 
     pch = strtok (ssid_pwd_auth, ",");
     credentials[0]=pch;
@@ -303,7 +306,7 @@ static void get_thing_name(char *pArg)
 {
     (void)pArg;
         
-    if (cid != NULL)
+    if (cid[0] != '\0')
     {
         printf("%s\r\n\4",cid);
     }

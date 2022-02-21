@@ -1,5 +1,5 @@
 /*
-    \file   aws_cloud_service.c
+    \file   mosquitto_cloud_service.c
 
     \brief  Cloud Specific Service 
 
@@ -88,21 +88,6 @@ int8_t CLOUD_connectSocket(uint32_t ipAddress)
 {
     int8_t ret = BSD_SUCCESS;    
     
-    // Abstract the SSL section into a separate function
-    int8_t sslInit;
-    
-    sslInit = m2m_ssl_init(NETWORK_wifiSslCallback);
-    if(sslInit != M2M_SUCCESS)
-    {
-        debug_printInfo("WiFi SSL Initialization failed");
-    }
-    
-    sslInit = m2m_ssl_set_active_ciphersuites((uint32_t)SSL_ECC_ONLY_CIPHERS);
-    if(sslInit != SOCK_ERR_NO_ERROR)
-    {
-        debug_printInfo("Set active cipher suites failed");
-    }
-    
     if (ipAddress > 0)
     {
         struct bsd_sockaddr_in addr;
@@ -117,7 +102,7 @@ int8_t CLOUD_connectSocket(uint32_t ipAddress)
         // Todo: Check - Are we supposed to call close on the socket here to ensure we do not leak ?
         if (socketState == NOT_A_SOCKET)
         {
-            *context->tcpClientSocket = BSD_socket(PF_INET, BSD_SOCK_STREAM, 1);
+            *context->tcpClientSocket = BSD_socket(PF_INET, BSD_SOCK_STREAM, 0);
             
             if (*context->tcpClientSocket >=0)
             {
@@ -133,25 +118,14 @@ int8_t CLOUD_connectSocket(uint32_t ipAddress)
         if (socketState == SOCKET_CLOSED) 
         {
          debug_print("CLOUD: Connect socket");
-         
-         ret = BSD_setsockopt(*context->tcpClientSocket, BSD_SOL_SSL_SOCKET, BSD_SO_SSL_SNI, awsEndpoint, strlen(awsEndpoint));
-         if(ret == BSD_SUCCESS)
-         {
-             ret = BSD_connect(*context->tcpClientSocket, (struct bsd_sockaddr *)&addr, sizeof(struct bsd_sockaddr_in));
+         ret = BSD_connect(*context->tcpClientSocket, (struct bsd_sockaddr *)&addr, sizeof(struct bsd_sockaddr_in));
 
-             if (ret != BSD_SUCCESS) 
-             {
-                debug_printError("CLOUD connect received %d",ret);
-            
-                BSD_close(*context->tcpClientSocket);
-             }
-             
-         }
-         else
+         if (ret != BSD_SUCCESS) 
          {
-             debug_printError("CLOUD setsockopt received %d",ret);
-         }   
-         
+            debug_printError("CLOUD connect received %d",ret);
+            
+            BSD_close(*context->tcpClientSocket);
+         }
       }
    }   
    return ret;
@@ -178,7 +152,7 @@ void CLOUD_subscribe(void)
     }
 }
 
-void CLOUD_publish(uint8_t* refToPublishTopic, uint8_t* data, unsigned int len)
+void CLOUD_publish(uint8_t* refToPublishTopic, uint8_t* data, uint16_t len)
 {
     MQTT_CLIENT_publish(refToPublishTopic, data, len);
 }

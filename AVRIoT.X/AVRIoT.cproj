@@ -267,18 +267,34 @@
     <ToolchainSettings>
       <com.microchip.xc8>
   <com.microchip.xc8.common.optimization.RelaxBranches>True</com.microchip.xc8.common.optimization.RelaxBranches>
+  <com.microchip.xc8.common.outputfiles.hex>True</com.microchip.xc8.common.outputfiles.hex>
+  <com.microchip.xc8.common.outputfiles.eep>True</com.microchip.xc8.common.outputfiles.eep>
+  <com.microchip.xc8.common.outputfiles.usersignatures>False</com.microchip.xc8.common.outputfiles.usersignatures>
+  <com.microchip.xc8.common.outputfiles.lss>True</com.microchip.xc8.common.outputfiles.lss>
   <com.microchip.xc8.compiler.general.ChangeDefaultCharTypeUnsigned>True</com.microchip.xc8.compiler.general.ChangeDefaultCharTypeUnsigned>
   <com.microchip.xc8.compiler.general.ChangeDefaultBitFieldUnsigned>True</com.microchip.xc8.compiler.general.ChangeDefaultBitFieldUnsigned>
   <com.microchip.xc8.compiler.symbols.DefSymbols>
     <ListValues>
       <Value>(%24DeviceMacro)</Value>
-      <Value>NDEBUG</Value>
+      <Value>DEBUG</Value>
     </ListValues>
   </com.microchip.xc8.compiler.symbols.DefSymbols>
   <com.microchip.xc8.compiler.directories.IncludePaths>
     <ListValues>
       <Value>../Config</Value>
       <Value>../mcc_generated_files</Value>
+      <Value>../mcc_generated_files/cli</Value>
+      <Value>../mcc_generated_files/cloud</Value>
+      <Value>../mcc_generated_files/config</Value>
+      <Value>../mcc_generated_files/credentials_storage</Value>
+      <Value>../mcc_generated_files/CryptoAuthenticationLibrary</Value>
+      <Value>../mcc_generated_files/drivers</Value>
+      <Value>../mcc_generated_files/include</Value>
+      <Value>../mcc_generated_files/mqtt</Value>
+      <Value>../mcc_generated_files/src</Value>
+      <Value>../mcc_generated_files/utils</Value>
+      <Value>../mcc_generated_files/winc</Value>
+      <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.7.374\xc8\avr\include\</Value>
     </ListValues>
   </com.microchip.xc8.compiler.directories.IncludePaths>
   <com.microchip.xc8.compiler.optimization.level>Optimize (-O1)</com.microchip.xc8.compiler.optimization.level>
@@ -330,6 +346,7 @@
       <Value>../mcc_generated_files/src</Value>
       <Value>../mcc_generated_files/utils</Value>
       <Value>../mcc_generated_files/winc</Value>
+      <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.7.374\xc8\avr\include\</Value>
     </ListValues>
   </com.microchip.xc8.compiler.directories.IncludePaths>
   <com.microchip.xc8.compiler.optimization.level>Optimize (-O1)</com.microchip.xc8.compiler.optimization.level>
@@ -406,7 +423,7 @@
     <Compile Include="mcc_generated_files\cli\cli.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="mcc_generated_files\cloud\aws_cloud_service.c">
+    <Compile Include="mcc_generated_files\cloud\mosquitto_cloud_service.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="mcc_generated_files\cloud\cloud_interface.h">

@@ -113,8 +113,8 @@ ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t *rxdata, uint16_t *rxlength
 
 ATCA_STATUS hal_i2c_wake(ATCAIface iface)
 {
-        ATCAIfaceCfg *cfg  = atgetifacecfg(iface);
-	uint32_t      bdrt = cfg->atcai2c.baud;
+    ATCAIfaceCfg *cfg  = atgetifacecfg(iface);
+//	uint32_t      bdrt = cfg->atcai2c.baud;
 	uint8_t       data[4];
 	uint8_t       zero_byte = 0;
 

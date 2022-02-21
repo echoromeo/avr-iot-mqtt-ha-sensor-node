@@ -57,7 +57,7 @@ SOFTWARE.
 
 //Flash location to read thing Name from winc
 #define THING_NAME_FLASH_OFFSET (M2M_TLS_SERVER_FLASH_OFFSET + M2M_TLS_SERVER_FLASH_SIZE - FLASH_PAGE_SZ) 
-#define AWS_ENDPOINT_FLASH_OFFSET (THING_NAME_FLASH_OFFSET - FLASH_PAGE_SZ)
+#define MOSQUITTO_ENDPOINT_FLASH_OFFSET (THING_NAME_FLASH_OFFSET - FLASH_PAGE_SZ)
 #define CLOUD_WIFI_TASK_INTERVAL        50L
 #define CLOUD_NTP_TASK_INTERVAL         1000L
 #define SOFT_AP_CONNECT_RETRY_INTERVAL  1000L
@@ -152,7 +152,7 @@ void wifi_readThingNameFromWinc(void)
 	    status = spi_flash_read((uint8_t*)cid, THING_NAME_FLASH_OFFSET,MQTT_CID_LENGTH);        
         if(status != M2M_SUCCESS || (((uint8_t)cid[0]) == 0xFF) || (((uint8_t)cid[MQTT_CID_LENGTH-1]) == 0xFF))
         {
-            sprintf(cid, "%s", AWS_THING_NAME); 
+            sprintf(cid, "%s", MOSQUITTO_THING_NAME); 
             debug_printIoTAppMsg("Thing Name is not present, error type %d, user defined thing ID is used",status);
         }
         else 
@@ -162,7 +162,7 @@ void wifi_readThingNameFromWinc(void)
     }
 }
 
-void wifi_readAWSEndpointFromWinc(void)
+void wifi_readMosquittoEndpointFromWinc(void)
 {
     int8_t status;
     
@@ -170,24 +170,24 @@ void wifi_readAWSEndpointFromWinc(void)
     
     if(status != M2M_SUCCESS)
     {
-        debug_printError("WINC download mode failed - AWS Host URL cannot be obtained");
+        debug_printError("WINC download mode failed - Mosquitto Host URL cannot be obtained");
     }
     else
     {        
         debug_printInfo("WINC in download mode");
 
-        status = spi_flash_read((uint8_t*)awsEndpoint, AWS_ENDPOINT_FLASH_OFFSET, AWS_ENDPOINT_LEN);
+        status = spi_flash_read((uint8_t*)mosquittoEndpoint, MOSQUITTO_ENDPOINT_FLASH_OFFSET, MOSQUITTO_ENDPOINT_LEN);
         if(status != M2M_SUCCESS )
         {
-            debug_printError("Error reading AWS Endpoint from WINC");
+            debug_printError("Error reading Mosquitto Endpoint from WINC");
         }
-        else if(((uint8_t)awsEndpoint[0]) == 0xFF)
+        else if(((uint8_t)mosquittoEndpoint[0]) == 0xFF)
         {
-            debug_printIoTAppMsg("AWS Endpoint is not present in WINC, either re-provision or microchip AWS sandbox endpoint will be used");
+            debug_printIoTAppMsg("Mosquitto Endpoint is not present in WINC, either re-provision or microchip AWS sandbox endpoint will be used");
         }
         else
         {
-            debug_printIoTAppMsg("AWS Endpoint read from WINC is %s",awsEndpoint);  
+            debug_printIoTAppMsg("Mosquitto Endpoint read from WINC is %s",mosquittoEndpoint);  
         }
     }
 }
@@ -356,7 +356,7 @@ static void wifiCallback(uint8_t msgType, const void *pMsg)
         {
             // Now we are really connected, we have AP and we have DHCP, start off the MQTT host lookup now, response in 
 			
-            if (gethostbyname((const char*)awsEndpoint) == M2M_SUCCESS)
+            if (gethostbyname((const char*)mosquittoEndpoint) == M2M_SUCCESS)
             {
                 if (shared_networking_params.amDisconnecting == 1)
                 {

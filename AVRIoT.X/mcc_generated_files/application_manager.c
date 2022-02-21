@@ -59,10 +59,9 @@ SOFTWARE.
 #define SW1_TOGGLE_STATE	   SW1_GetValue()
 #define TOGGLE_ON  1
 #define TOGGLE_OFF 0
-#define DEVICE_SHADOW_INIT_INTERVAL 1000L
-#define UPDATE_DEVICE_SHADOW_BUFFER_TIME (2)
-#define AWS_MCHP_SANDBOX_URL "a1gqt8sttiign3.iot.us-east-2.amazonaws.com"
-static uint8_t toggleState = 0;
+//#define DEVICE_SHADOW_INIT_INTERVAL 1000L
+//#define UPDATE_DEVICE_SHADOW_BUFFER_TIME (2)
+//#define AWS_MCHP_SANDBOX_URL "a1gqt8sttiign3.iot.us-east-2.amazonaws.com"
 
 // This will contain the device ID, before we have it this dummy value is the init value which is non-0
 char attDeviceID[20] = "BAAAAADD1DBAAADD1D";
@@ -75,17 +74,14 @@ timerStruct_t MAIN_dataTasksTimer = {MAIN_dataTask};
 
 static void  wifiConnectionStateChanged(uint8_t status);
 static void sendToCloud(void);
-static void updateDeviceShadow(void);
 static void subscribeToCloud(void);
 static void receivedFromCloud(uint8_t *topic, uint8_t *payload);
-static void setToggleState(uint8_t passedToggleState);
-static uint8_t getToggleState(void);
 uint32_t initDeviceShadow(void *payload);
 timerStruct_t initDeviceShadowTimer = {initDeviceShadow};
 #if USE_CUSTOM_ENDPOINT_URL
-void loadCustomAWSEndpoint(void);
+void loadCustomMosquittoEndpoint(void);
 #else
-void loadDefaultAWSEndpoint(void);
+void loadDefaultMosquittoEndpoint(void);
 #endif
 
 // This will get called every 1 second only while we have a valid Cloud connection
@@ -97,7 +93,7 @@ static void sendToCloud(void)
     int light = 0;
     int len = 0;    
     memset((void*)publishMqttTopic, 0, sizeof(publishMqttTopic));
-    sprintf(publishMqttTopic, "%s/sensors", cid);
+    sprintf(publishMqttTopic, "test/sensors");
     // This part runs every CFG_SEND_INTERVAL seconds
     if (shared_networking_params.haveAPConnection)
     {
@@ -124,33 +120,15 @@ static void sendToCloud(void)
 //This handles messages published from the MQTT server when subscribed
 static void receivedFromCloud(uint8_t *topic, uint8_t *payload)
 {
-    char *toggleToken = "\"toggle\":";
-    char *subString;
-   sprintf(mqttSubscribeTopic, "$aws/things/%s/shadow/update/delta", cid);
-    if (strncmp((void*) mqttSubscribeTopic, (void*) topic, strlen(mqttSubscribeTopic)) == 0) 
-    {
-        if ((subString = strstr((char*)payload, toggleToken)))
-        {
-            if (subString[strlen(toggleToken)] == '1')
-            {   
-                setToggleState(TOGGLE_ON);
-                ledParameterYellow.onTime = SOLID_ON;
-                ledParameterYellow.offTime = SOLID_OFF;
-                LED_control(&ledParameterYellow);
-            }
-            else
-            {
-                setToggleState(TOGGLE_OFF);
-                ledParameterYellow.onTime = SOLID_OFF;
-                ledParameterYellow.offTime = SOLID_ON;
-                LED_control(&ledParameterYellow);
-            }
-            holdCount = 2;
-        }
-    }
-    debug_printIoTAppMsg("topic: %s", topic);
+    // TODO: this is where to handle stuff..
+    
+    ledParameterYellow.onTime = SOLID_ON;
+    ledParameterYellow.offTime = SOLID_OFF;
+    LED_control(&ledParameterYellow);
+	holdCount = 2;
+	
+	debug_printIoTAppMsg("topic: %s", topic);
     debug_printIoTAppMsg("payload: %s", payload);
-    updateDeviceShadow();
 }
 
 void application_init(void)
@@ -198,12 +176,12 @@ void application_init(void)
 #endif   
     debug_setPrefix(attDeviceID);     
 #if USE_CUSTOM_ENDPOINT_URL
-    loadCustomAWSEndpoint();
+    loadCustomMosquittoEndpoint();
 #else
-    loadDefaultAWSEndpoint();
+    loadDefaultMosquittoEndpoint();
 #endif  
     wifi_readThingNameFromWinc();
-    timeout_create(&initDeviceShadowTimer, DEVICE_SHADOW_INIT_INTERVAL );    
+
     // Blocking debounce
     for(i = 0; i < SW_DEBOUNCE_INTERVAL; i++)
     {
@@ -289,74 +267,26 @@ void application_init(void)
 
 static void subscribeToCloud(void)
 {
-    sprintf(mqttSubscribeTopic, "$aws/things/%s/shadow/update/delta", cid); 
+	sprintf(mqttSubscribeTopic, "avr/blink");
     CLOUD_registerSubscription((uint8_t*)mqttSubscribeTopic,receivedFromCloud);
 }
 
-static void setToggleState(uint8_t passedToggleState)
-{
-    toggleState = passedToggleState;
-}
-
-static uint8_t getToggleState(void)
-{
-    return toggleState;
-}
-
-uint32_t initDeviceShadow(void *payload)
-{
-    static uint32_t previousTime = 0;
-    if(CLOUD_checkIsConnected())
-    {    
-       // Get the current time. This uses the C standard library time functions
-       uint32_t timeNow = TIME_getCurrent();
-       if(previousTime == 0)
-       {
-           previousTime = timeNow;         
-       }
-       else if((TIME_getDiffTime(timeNow, previousTime)) >= UPDATE_DEVICE_SHADOW_BUFFER_TIME)
-       {
-           updateDeviceShadow();
-           return 0; 
-       }
-    }
-    return DEVICE_SHADOW_INIT_INTERVAL;
-}
-
-static void updateDeviceShadow(void)
-{
-    static char payload[PAYLOAD_SIZE];
-    static char topic[PUBLISH_TOPIC_SIZE];
-    int payloadLength = 0;
-     
-    memset((void*)topic, 0, sizeof(topic));
-    sprintf(topic, "$aws/things/%s/shadow/update", cid);
-    if (shared_networking_params.haveAPConnection)
-    { 
-        payloadLength = sprintf(payload,"{\"state\":{\"reported\":{\"toggle\":%d}}}", getToggleState());
-    }
-    if (payloadLength >0) 
-    {
-        CLOUD_publishData((uint8_t*)topic,(uint8_t*)payload, payloadLength); 
-    }
-}
-
 #if USE_CUSTOM_ENDPOINT_URL
-void loadCustomAWSEndpoint(void)
+void loadCustomMosquittoEndpoint(void)
 {
-    memset(awsEndpoint, '\0', AWS_ENDPOINT_LEN);
-    sprintf(awsEndpoint, "%s", CFG_MQTT_HOSTURL);
-    debug_printIoTAppMsg("Custom AWS Endpoint is used : %s", awsEndpoint);
+    memset(mosquittoEndpoint, '\0', MOSQUITTO_ENDPOINT_LEN);
+    sprintf(mosquittoEndpoint, "%s", CFG_MQTT_HOSTURL);
+    debug_printIoTAppMsg("Custom Mosquitto Endpoint is used : %s", mosquittoEndpoint);
 }
 #else
-void loadDefaultAWSEndpoint(void)
+void loadDefaultMosquittoEndpoint(void)
 {
-    memset(awsEndpoint, '\0', AWS_ENDPOINT_LEN);
-    wifi_readAWSEndpointFromWinc();
-    if(((uint8_t)awsEndpoint[0]) == 0xFF)
+    memset(mosquittoEndpoint, '\0', MOSQUITTO_ENDPOINT_LEN);
+    wifi_readMosquittoEndpointFromWinc();
+    if(((uint8_t)mosquittoEndpoint[0]) == 0xFF)
     {
-        sprintf(awsEndpoint, "%s", AWS_MCHP_SANDBOX_URL);
-        debug_printIoTAppMsg("Using the AWS Sandbox endpoint : %s", awsEndpoint);
+        sprintf(mosquittoEndpoint, "%s", AWS_MCHP_SANDBOX_URL);
+        debug_printIoTAppMsg("Using the Mosquitto endpoint : %s", mosquittoEndpoint);
     }
 }
 #endif
