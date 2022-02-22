@@ -36,7 +36,6 @@
 
 
 char mosquittoEndpoint[MOSQUITTO_ENDPOINT_LEN];
-char cid[MQTT_CID_LENGTH];
 static publishReceptionHandler_t *publishRecvInfo;
 
 
@@ -149,7 +148,7 @@ void MQTT_CLIENT_connect(void)
 	cloudConnectPacket.connectVariableHeader.connectFlagsByte.All = 0x02;
 	cloudConnectPacket.connectVariableHeader.keepAliveTimer = CFG_MQTT_CONN_TIMEOUT;
 
-	cloudConnectPacket.clientID			= (uint8_t*)cid;
+	cloudConnectPacket.clientID			= (uint8_t*)eeprom->mqttCID;
 	cloudConnectPacket.password      	= (uint8_t *)eeprom->mqttPassword;
 	cloudConnectPacket.passwordLength	= strlen(eeprom->mqttPassword);
 	cloudConnectPacket.username      	= (uint8_t *)eeprom->mqttUser;

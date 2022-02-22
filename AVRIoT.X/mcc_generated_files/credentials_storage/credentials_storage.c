@@ -51,7 +51,7 @@ eeprom_data_t *eeprom = (eeprom_data_t *) EEPROM_START;
 eeprom_data_t eeprom_init __attribute((__used__, __section__(".eeprom"))) = {
 	.mqttUser = CFG_MQTT_USERNAME,
 	.mqttPassword = CFG_MQTT_PASSWORD,
-	.mqttCID = "",
+	.mqttCID = '\0',
 	.mqttAddress = CFG_MQTT_HOSTURL,
 	.mqttPort = CFG_MQTT_PORT,
 	.mqttAddressType = MQTT_HOST_IP,
@@ -122,9 +122,9 @@ void CREDENTIALS_STORAGE_writeMQTTCredentials(char *username, char *password, ch
 	}
 	
 	if (cid != NULL) {
-		snprintf(eeprom->mqttCID, sizeof(eeprom->mqttPassword), cid);
+		snprintf(eeprom->mqttCID, sizeof(eeprom->mqttCID), cid);
 	} else {
-		memset(eeprom->mqttCID, 0, sizeof(eeprom->mqttCID));
+		CRYPTO_CLIENT_printSerialNumber(eeprom->mqttCID);
 	}
 	eeprom_userrow_write_buffer(false);
 }

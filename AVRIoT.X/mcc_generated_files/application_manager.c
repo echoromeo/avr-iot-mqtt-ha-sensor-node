@@ -125,7 +125,10 @@ void application_init(void)
 #else
     loadDefaultMosquittoEndpoint();
 #endif  
-    wifi_readThingNameFromWinc();
+    if (eeprom->mqttCID[0] == '\0')
+    {
+		CREDENTIALS_STORAGE_writeMQTTCredentials(NULL, NULL, attDeviceID);		
+    }
 
     // Blocking debounce
     for(i = 0; i < SW_DEBOUNCE_INTERVAL; i++)
@@ -222,11 +225,6 @@ void loadDefaultMosquittoEndpoint(void)
 {
     memset(mosquittoEndpoint, '\0', MOSQUITTO_ENDPOINT_LEN);
     wifi_readMosquittoEndpointFromWinc();
-    if(((uint8_t)mosquittoEndpoint[0]) == 0xFF)
-    {
-		debug_printError("APP: MosquittoEndpointFromWinc failed");
-        sprintf(mosquittoEndpoint, "%s", eeprom->mqttAddress);
-    }
     debug_printIoTAppMsg("Using the Mosquitto endpoint : %s", mosquittoEndpoint);
 }
 #endif

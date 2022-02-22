@@ -32,7 +32,6 @@
 #include "../mqtt/mqtt_packetTransfer_interface.h"
 
 
-extern char cid[];
 extern char mosquittoEndpoint[];
 
 // The call back table prototype for sending the payload received as part of  

@@ -7,11 +7,6 @@
 
 #define MOSQUITTO_ENDPOINT_LEN (45)
 
-//Thing Name configuration
-
-//Use this thing Name in the event of not reading it from WINC
-#define MOSQUITTO_THING_NAME        ""  
-
 
 // </h>
 #endif // CLOUD_CONFIG_H

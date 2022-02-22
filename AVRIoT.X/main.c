@@ -21,6 +21,13 @@
     SOFTWARE.
 */
 
+/*
+ The aim here is to set up a Home Assistant MQTT Light with MQTT Discovery 
+ - https://www.home-assistant.io/docs/mqtt/discovery/
+ - https://www.home-assistant.io/integrations/light.mqtt/#implementations
+*/
+
+
 #include <xc.h>
 #include <string.h>
 #include <time.h>

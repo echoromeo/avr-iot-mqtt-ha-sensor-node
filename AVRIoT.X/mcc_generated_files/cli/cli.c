@@ -373,9 +373,9 @@ static void get_thing_name(char *pArg)
 {
     (void)pArg;
         
-    if (cid[0] != '\0')
+    if (eeprom->mqttCID[0] != '\0')
     {
-        printf("%s\r\n\4",cid);
+        printf("%s\r\n\4",eeprom->mqttCID);
     }
     else
     {

@@ -136,32 +136,6 @@ void wifi_init(void (*funcPtr)(uint8_t), uint8_t mode)
     timeout_create(&wifiHandlerTimer, CLOUD_WIFI_TASK_INTERVAL);
 }
 
-void wifi_readThingNameFromWinc(void)
-{
-    int8_t status;
-    status =  m2m_wifi_download_mode();
-    
-    if(status != M2M_SUCCESS)
-    {
-        debug_printError("WINC download mode failed - Thing Name cannot be obtained");
-    }
-    else
-    {
-        debug_printInfo("WINC in download mode");
-        		
-	    status = spi_flash_read((uint8_t*)cid, THING_NAME_FLASH_OFFSET,MQTT_CID_LENGTH);        
-        if(status != M2M_SUCCESS || (((uint8_t)cid[0]) == 0xFF) || (((uint8_t)cid[MQTT_CID_LENGTH-1]) == 0xFF))
-        {
-            sprintf(cid, "%s", MOSQUITTO_THING_NAME); 
-            debug_printIoTAppMsg("Thing Name is not present, error type %d, user defined thing ID is used",status);
-        }
-        else 
-        {
-            debug_printIoTAppMsg("Thing Name read from the device is %s",cid);
-        }
-    }
-}
-
 void wifi_readMosquittoEndpointFromWinc(void)
 {
     int8_t status;
@@ -184,6 +158,7 @@ void wifi_readMosquittoEndpointFromWinc(void)
         else if(((uint8_t)mosquittoEndpoint[0]) == 0xFF)
         {
             debug_printIoTAppMsg("Mosquitto Endpoint is not present in WINC, either re-provision or microchip AWS sandbox endpoint will be used");
+	        sprintf(mosquittoEndpoint, "%s", eeprom->mqttAddress);
         }
         else
         {
