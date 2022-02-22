@@ -21,7 +21,29 @@
     SOFTWARE.
 */
 
+#include <xc.h>
+#include <string.h>
+#include <time.h>
+#include <stdio.h>
+#include "main.h"
+
+#include "mcc_generated_files/config/IoT_Sensor_Node_config.h"
+#include "mcc_generated_files/config/conf_winc.h"
+#include "mcc_generated_files/config/mqtt_config.h"
+#include "mcc_generated_files/config/cloud_config.h"
+
 #include "mcc_generated_files/application_manager.h"
+#include "mcc_generated_files/led.h"
+#include "mcc_generated_files/debug_print.h"
+
+#include "mcc_generated_files/sensors_handling.h"
+#include "mcc_generated_files/credentials_storage/credentials_storage.h"
+#include "mcc_generated_files/time_service.h"
+#include "mcc_generated_files/cloud/cloud_service.h"
+#include "mcc_generated_files/cloud/mqtt_service.h"
+
+char mqttSubscribeTopic[SUBSCRIBE_TOPIC_SIZE];
+static uint8_t holdCount = 0;
 
 int main(void)
 {
@@ -33,4 +55,57 @@ int main(void)
 	}
    
 	return 0;
+}
+
+// This will get called every 1 second only while we have a valid Cloud connection
+void sendToCloud(void)
+{
+	static char json[PAYLOAD_SIZE];
+	static char publishMqttTopic[PUBLISH_TOPIC_SIZE];
+	int rawTemperature = 0;
+	int light = 0;
+	int len = 0;
+	memset((void*)publishMqttTopic, 0, sizeof(publishMqttTopic));
+	sprintf(publishMqttTopic, "test/sensors");
+	// This part runs every CFG_SEND_INTERVAL seconds
+	if (shared_networking_params.haveAPConnection)
+	{
+		rawTemperature = SENSORS_getTempValue();
+		light = SENSORS_getLightValue();
+		len = sprintf(json,"{\"Light\":%d,\"Temp\":%d.%02d}", light,rawTemperature/100,abs(rawTemperature)%100);
+	}
+	if (len >0)
+	{
+		CLOUD_publishData((uint8_t*)publishMqttTopic ,(uint8_t*)json, len);
+		if (holdCount)
+		{
+			holdCount--;
+		}
+		else
+		{
+			ledParameterYellow.onTime = LED_BLIP;
+			ledParameterYellow.offTime = LED_BLIP;
+			LED_control(&ledParameterYellow);
+		}
+	}
+}
+
+void subscribeToCloud(void)
+{
+	sprintf(mqttSubscribeTopic, "avr/blink");
+	CLOUD_registerSubscription((uint8_t*)mqttSubscribeTopic,receivedFromCloud);
+}
+
+//This handles messages published from the MQTT server when subscribed
+void receivedFromCloud(uint8_t *topic, uint8_t *payload)
+{
+	// TODO: this is where to handle stuff..
+	
+	ledParameterYellow.onTime = SOLID_ON;
+	ledParameterYellow.offTime = SOLID_OFF;
+	LED_control(&ledParameterYellow);
+	holdCount = 2;
+	
+	debug_printIoTAppMsg("topic: %s", topic);
+	debug_printIoTAppMsg("payload: %s", payload);
 }

@@ -28,8 +28,9 @@ SOFTWARE.
 #include <string.h>
 #include <time.h>
 #include <stdio.h>
-#include "utils/atomic.h"
 #include <avr/wdt.h>
+#include "../../main.h"
+#include "utils/atomic.h"
 #include "include/pin_manager.h"
 #include "application_manager.h"
 #include "mcc.h"
@@ -62,69 +63,18 @@ SOFTWARE.
 
 // This will contain the device ID, before we have it this dummy value is the init value which is non-0
 char attDeviceID[20] = "BAAAAADD1DBAAADD1D";
-char mqttSubscribeTopic[SUBSCRIBE_TOPIC_SIZE];
 ATCA_STATUS retValCryptoClientSerialNumber;
-static uint8_t holdCount = 0;
 
 uint32_t MAIN_dataTask(void *payload);
 timerStruct_t MAIN_dataTasksTimer = {MAIN_dataTask};
 
 static void wifiConnectionStateChanged(uint8_t status);
-static void sendToCloud(void);
-static void subscribeToCloud(void);
-static void receivedFromCloud(uint8_t *topic, uint8_t *payload);
+
 #if USE_CUSTOM_ENDPOINT_URL
 void loadCustomMosquittoEndpoint(void);
 #else
 void loadDefaultMosquittoEndpoint(void);
 #endif
-
-// This will get called every 1 second only while we have a valid Cloud connection
-static void sendToCloud(void)
-{
-    static char json[PAYLOAD_SIZE];
-    static char publishMqttTopic[PUBLISH_TOPIC_SIZE];
-    int rawTemperature = 0;
-    int light = 0;
-    int len = 0;    
-    memset((void*)publishMqttTopic, 0, sizeof(publishMqttTopic));
-    sprintf(publishMqttTopic, "test/sensors");
-    // This part runs every CFG_SEND_INTERVAL seconds
-    if (shared_networking_params.haveAPConnection)
-    {
-        rawTemperature = SENSORS_getTempValue();
-        light = SENSORS_getLightValue();
-        len = sprintf(json,"{\"Light\":%d,\"Temp\":%d.%02d}", light,rawTemperature/100,abs(rawTemperature)%100);
-    }
-    if (len >0) 
-    {
-        CLOUD_publishData((uint8_t*)publishMqttTopic ,(uint8_t*)json, len);        
-        if (holdCount)
-        {
-            holdCount--;
-        }
-        else
-        {
-            ledParameterYellow.onTime = LED_BLIP;
-            ledParameterYellow.offTime = LED_BLIP;
-            LED_control(&ledParameterYellow);
-        }
-    }
-}
-
-//This handles messages published from the MQTT server when subscribed
-static void receivedFromCloud(uint8_t *topic, uint8_t *payload)
-{
-    // TODO: this is where to handle stuff..
-    
-    ledParameterYellow.onTime = SOLID_ON;
-    ledParameterYellow.offTime = SOLID_OFF;
-    LED_control(&ledParameterYellow);
-	holdCount = 2;
-	
-	debug_printIoTAppMsg("topic: %s", topic);
-    debug_printIoTAppMsg("payload: %s", payload);
-}
 
 void application_init(void)
 {
@@ -258,12 +208,6 @@ void application_init(void)
     
     LED_test();
     subscribeToCloud();
-}
-
-static void subscribeToCloud(void)
-{
-	sprintf(mqttSubscribeTopic, "avr/blink");
-    CLOUD_registerSubscription((uint8_t*)mqttSubscribeTopic,receivedFromCloud);
 }
 
 #if USE_CUSTOM_ENDPOINT_URL
