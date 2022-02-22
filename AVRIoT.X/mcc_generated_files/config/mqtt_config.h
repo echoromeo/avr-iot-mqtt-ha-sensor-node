@@ -41,18 +41,16 @@
 #define NUM_TOPICS_UNSUBSCRIBE      NUM_TOPICS_SUBSCRIBE	// The MQTT client can unsubscribe only from those topics to which it has already subscribed
 
 // MCC generated parameters
-#define CFG_MQTT_PORT 8883
-#define CFG_MQTT_HOSTURL "need.to.change.this"
-#define CFG_MQTT_SERVERIPv4_HEX 0x00000000
-#define CFG_MQTT_CONN_TIMEOUT 10
+#define CFG_MQTT_PORT 1883
+#define CFG_MQTT_HOSTURL "192.168.1.10"
+#define CFG_MQTT_SERVERIPv4_HEX
+#define CFG_MQTT_CONN_TIMEOUT 60
 #define CFG_MQTT_TXBUFFER_SIZE 400
 #define CFG_MQTT_RXBUFFER_SIZE 400
 #define CFG_MQTT_USERNAME "mchpUser"
 #define CFG_MQTT_PASSWORD "microchip"
 #define CFG_MQTT_CID "" // If empty it will be filled with the ECC608 serial
 #define CFG_QOS 0
-#define CFG_PUBTOPIC "mchp/iot/events"
-#define CFG_SUBTOPIC "mchp/iot/config"
 #define TCPIP_BSD 1
 
 /********************MQTT Client configurations*(END)***********************/
