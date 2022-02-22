@@ -112,8 +112,8 @@ void CLOUD_registerSubscription(uint8_t *topic, imqttHandlePublishDataFuncPtr su
     {
         imqtt_publishReceiveCallBackTable[subscriptionTopicCount].topic = topic;
         imqtt_publishReceiveCallBackTable[subscriptionTopicCount].mqttHandlePublishDataCallBack = subscriptionCallback;            
+	    subscriptionTopicCount++;
     }    
-    subscriptionTopicCount++;
     MQTT_SetPublishReceptionHandlerTable(imqtt_publishReceiveCallBackTable);
 }
 
