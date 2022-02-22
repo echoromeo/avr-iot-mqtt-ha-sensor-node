@@ -49,6 +49,7 @@
 #define CFG_MQTT_RXBUFFER_SIZE 400
 #define CFG_MQTT_USERNAME "mchpUser"
 #define CFG_MQTT_PASSWORD "microchip"
+#define CFG_MQTT_CID "" // If empty it will be filled with the ECC608 serial
 #define CFG_QOS 0
 #define CFG_PUBTOPIC "mchp/iot/events"
 #define CFG_SUBTOPIC "mchp/iot/config"
