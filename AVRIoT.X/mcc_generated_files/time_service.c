@@ -28,6 +28,7 @@
 #include "time_service.h"
 //#include "timeout.h"
 #include "drivers/timeout.h"
+#include "debug_print.h"
 
 static uint32_t timeTicker(void *payload);
 static timerStruct_t timeTask = {timeTicker};
@@ -105,6 +106,7 @@ void TIME_ntpTimeStamp(tstrSystemTime* WINCTime)
 // Capture and Store
 	mkTimeResult = mktime(&theTime);
 	TIME_setCurrent(mkTimeResult);
+//	debug_printInfo("New current time set: %lu", mkTimeResult);
 // AVR set Time(null) value
 	set_system_time(mkTimeResult);
 }
