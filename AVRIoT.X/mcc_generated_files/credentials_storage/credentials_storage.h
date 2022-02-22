@@ -29,16 +29,46 @@
 #ifndef CREDENTIALS_STORAGE_H
 #define CREDENTIALS_STORAGE_H
 
+#include <xc.h>
 #include "../winc/m2m/m2m_types.h"
 
-#define MAX_NTP_SERVER_LENGTH	20
+#define MQTT_HOST_IP 0
+#define MQTT_HOST_DNS 1
 
-extern char ssid[M2M_MAX_SSID_LEN];
-extern char pass[M2M_MAX_PSK_LEN];
-extern char authType[2];
+#define MAX_NTP_SERVER_LENGTH	20
+#define MAX_MQTT_CREDENTIALS_LENGTH (EEPROM_PAGE_SIZE/2)
+
+
+typedef struct wifi_credentials
+{
+	char ssid[M2M_MAX_SSID_LEN];
+	char pass[M2M_MAX_PSK_LEN];
+	char authType[2];
+} wifi_credentials_t;
+
+typedef struct eeprom_data
+{
+	char mqttUser[MAX_MQTT_CREDENTIALS_LENGTH];
+	char mqttPassword[MAX_MQTT_CREDENTIALS_LENGTH];
+	char mqttCID[MAX_MQTT_CREDENTIALS_LENGTH];
+	char mqttAddress[MAX_MQTT_CREDENTIALS_LENGTH];
+	uint16_t mqttPort;
+	uint8_t mqttAddressType;
+	uint8_t reserved[(MAX_MQTT_CREDENTIALS_LENGTH*2)-3]; // Future eeprom page alignment
+} eeprom_data_t;
+
+extern wifi_credentials_t wifi;
+extern eeprom_data_t *eeprom;
+//extern userrow_data_t *userrow;
+char *mqttCIDptr;
+
 extern char ntpServerName[MAX_NTP_SERVER_LENGTH];
 
 void CREDENTIALS_STORAGE_clearWifiCredentials(void);
+void CREDENTIALS_STORAGE_writeMQTTCredentials(char *username, char *password,char *cid);
+void CREDENTIALS_STORAGE_clearMQTTCredentials(void);
+void CREDENTIALS_STORAGE_writeMQTTBroker(char *address, uint16_t port, uint8_t type);
+void CREDENTIALS_STORAGE_clearMQTTBroker(void);
 void CREDENTIALS_STORAGE_readNTPServerName(char *serverNameBuffer);
 void CREDENTIALS_STORAGE_writeNTPServerName(char *serverNameBuffer);
 

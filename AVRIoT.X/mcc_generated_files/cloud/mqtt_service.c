@@ -30,9 +30,10 @@
 #include "mqtt_service.h"
 #include "mqtt_core/mqtt_core.h"
 #include "../mqtt/mqtt_packetTransfer_interface.h"
-#include "../config/IoT_Sensor_Node_config.h"
 #include "../debug_print.h"
 #include "../config/cloud_config.h"
+#include "../credentials_storage/credentials_storage.h"
+
 
 char mosquittoEndpoint[MOSQUITTO_ENDPOINT_LEN];
 char cid[MQTT_CID_LENGTH];
@@ -146,9 +147,14 @@ void MQTT_CLIENT_connect(void)
 	memset(&cloudConnectPacket, 0, sizeof(mqttConnectPacket));
 
 	cloudConnectPacket.connectVariableHeader.connectFlagsByte.All = 0x02;
-	cloudConnectPacket.connectVariableHeader.keepAliveTimer = 10;
-	cloudConnectPacket.clientID = (uint8_t*)cid;
-	// TODO: Why did the other guys hardcode the password and username here?
+	cloudConnectPacket.connectVariableHeader.keepAliveTimer = CFG_MQTT_CONN_TIMEOUT;
+
+	cloudConnectPacket.clientID			= (uint8_t*)cid;
+	cloudConnectPacket.password      	= (uint8_t *)eeprom->mqttPassword;
+	cloudConnectPacket.passwordLength	= strlen(eeprom->mqttPassword);
+	cloudConnectPacket.username      	= (uint8_t *)eeprom->mqttUser;
+	cloudConnectPacket.usernameLength	= strlen(eeprom->mqttUser);
+	
     // Set the subscription callback handler here
     MQTT_SetPublishReceptionCallback(manageSubscriptionMessage);
 	MQTT_CreateConnectPacket(&cloudConnectPacket);

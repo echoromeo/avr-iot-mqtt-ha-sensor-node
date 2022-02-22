@@ -80,6 +80,8 @@ static void command_received(char *command_text);
 static void reset_cmd(char *pArg);
 static void reconnect_cmd(char *pArg);
 static void set_wifi_auth(char *ssid_pwd_auth);
+static void set_mqtt_auth(char *mqtt_auth);
+static void set_host(char *addr_port_type);
 static void get_thing_name(char *pArg);
 static void get_device_id(char *pArg);
 static void get_cli_version(char *pArg);
@@ -103,6 +105,8 @@ const struct cmd commands[] =
     { "reset",       reset_cmd},
     { "reconnect",   reconnect_cmd },
     { "wifi",        set_wifi_auth },
+    { "mqtt",        set_mqtt_auth},
+    { "host",        set_host},
     { "thing",       get_thing_name },
     { "device",      get_device_id },
     { "cli_version", get_cli_version },
@@ -214,16 +218,16 @@ static void set_wifi_auth(char *ssid_pwd_auth)
     switch (params)
     {
         case WIFI_PARAMS_OPEN:
-            strncpy(ssid, credentials[0],M2M_MAX_SSID_LEN-1);
-            strcpy(pass, "\0");
-            strcpy(authType, "1");                
+            strncpy(wifi.ssid, credentials[0],M2M_MAX_SSID_LEN-1);
+            strcpy(wifi.pass, "\0");
+            strcpy(wifi.authType, "1");                
             break;
 
         case WIFI_PARAMS_PSK:
         case WIFI_PARAMS_WEP:
-            strncpy(ssid, credentials[0],M2M_MAX_SSID_LEN-1);
-            strncpy(pass, credentials[1],M2M_MAX_PSK_LEN-1);
-            sprintf(authType, "%d", params);                
+            strncpy(wifi.ssid, credentials[0],M2M_MAX_SSID_LEN-1);
+            strncpy(wifi.pass, credentials[1],M2M_MAX_PSK_LEN-1);
+            sprintf(wifi.authType, "%d", params);                
             break;
             
         default:
@@ -261,6 +265,69 @@ static void set_wifi_auth(char *ssid_pwd_auth)
 		printf("Error. Wi-Fi command format is wifi <ssid>[,<pass>,[authType]]\r\n\4");
 	}
 }
+
+/*
+ * Function to set mqtt username and password, and override cid
+ */
+static void set_mqtt_auth(char *mqtt_auth)
+{
+	char * credentials[3]; //username, password, cid
+	char * pch;
+	uint8_t params = 0;
+
+	pch = strtok(mqtt_auth, ",");
+	credentials[0] = pch;
+	credentials[1] = NULL;
+	credentials[2] = NULL;
+
+	while (pch != NULL && params <= 2) {
+		credentials[params] = pch;
+		params++;
+		pch = strtok(NULL, ",");
+	}
+
+ 	if (credentials[0] != NULL && credentials[1] != NULL) {
+ 		printf("OK\r\n\4");
+		CREDENTIALS_STORAGE_writeMQTTCredentials(credentials[0], credentials[1], credentials[2]);
+		if (CLOUD_isConnected()) {
+			MQTT_Close(MQTT_GetClientConnectionInfo());
+		}
+	} else {
+		printf("Error. MQTT command format is mqtt <user>,<pass>[,<cid>]\r\n\4");
+	}
+}
+
+/*
+ * Function to set broker address and port
+ */
+static void set_host(char *addr_port_type)
+{
+	char * credentials[3]; //address, port, type
+	char * pch;
+	uint8_t params = 0;
+
+	pch = strtok(addr_port_type, ",");
+	credentials[0] = pch;
+	credentials[1] = NULL;
+	credentials[2] = NULL;
+
+	while (pch != NULL && params <= 2) {
+		credentials[params] = pch;
+		params++;
+		pch = strtok(NULL, ",");
+	}
+
+ 	if (credentials[0] != NULL && credentials[1] != NULL && credentials[2] != NULL) {
+ 		printf("OK\r\n\4");
+		CREDENTIALS_STORAGE_writeMQTTBroker(credentials[0], atoi(credentials[1]), atoi(credentials[2]));
+		if (CLOUD_isConnected()) {
+			MQTT_Close(MQTT_GetClientConnectionInfo());
+		}
+	} else {
+		printf("Error. Host command format is host <address>,port,address_type\r\n\4");
+	}
+}
+
 
 static void reconnect_cmd(char *pArg)
 {

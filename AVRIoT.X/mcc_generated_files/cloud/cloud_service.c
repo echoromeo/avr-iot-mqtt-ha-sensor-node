@@ -410,7 +410,7 @@ static uint8_t reInit(void)
     cloud_packetReceiveCallBackTable[0].recvCallBack = MQTT_CLIENT_receive;
     
     //When the input comes through cli/.cfg
-    if((strcmp(ssid,"") != 0) &&  (strcmp(authType,"") != 0))
+    if((strcmp(wifi.ssid,"") != 0) &&  (strcmp(wifi.authType,"") != 0))
     {
         wifi_creds = NEW_CREDENTIALS;
         debug_printInfo("Connecting to AP with new credentials");

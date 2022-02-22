@@ -198,7 +198,7 @@ bool wifi_connectToAp(uint8_t passed_wifi_creds)
     
     if(passed_wifi_creds == NEW_CREDENTIALS)
     {
-       wifiError = m2m_wifi_connect(ssid, strlen(ssid), atoi(authType), pass, M2M_WIFI_CH_ALL);
+       wifiError = m2m_wifi_connect(wifi.ssid, strlen(wifi.ssid), atoi(wifi.authType), wifi.pass, M2M_WIFI_CH_ALL);
     }
     else
     {
@@ -387,10 +387,10 @@ static void wifiCallback(uint8_t msgType, const void *pMsg)
             tstrM2MProvisionInfo *pstrProvInfo = (tstrM2MProvisionInfo*)pMsg;
             if(pstrProvInfo->u8Status == M2M_SUCCESS)
             {
-                sprintf((char*)authType, "%d", pstrProvInfo->u8SecType);
+                sprintf((char*)wifi.authType, "%d", pstrProvInfo->u8SecType);
                 debug_printInfo("%s",pstrProvInfo->au8SSID);			   			   
-                strcpy(ssid, (char *)pstrProvInfo->au8SSID);
-                strcpy(pass, (char *)pstrProvInfo->au8Password);
+                strcpy(wifi.ssid, (char *)pstrProvInfo->au8SSID);
+                strcpy(wifi.pass, (char *)pstrProvInfo->au8Password);
                 debug_printInfo("SOFT AP: Connect Credentials sent to WINC");
                 responseFromProvisionConnect = true;
                 timeout_create(&softApConnectTimer, 0);

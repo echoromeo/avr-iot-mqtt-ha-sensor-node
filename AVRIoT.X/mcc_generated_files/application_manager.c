@@ -193,9 +193,9 @@ void application_init(void)
         if(sw1CurrentVal < (SW_DEBOUNCE_INTERVAL/2))
         {    
             // Default Credentials + Connect to AP
-            strcpy(ssid, CFG_MAIN_WLAN_SSID);
-            strcpy(pass, CFG_MAIN_WLAN_PSK);
-            sprintf((char*)authType, "%d", CFG_MAIN_WLAN_AUTH);
+            strcpy(wifi.ssid, CFG_MAIN_WLAN_SSID);
+            strcpy(wifi.pass, CFG_MAIN_WLAN_PSK);
+            sprintf((char*)wifi.authType, "%d", CFG_MAIN_WLAN_AUTH);
             
             ledParameterBlue.onTime = LED_BLINK;
             ledParameterBlue.offTime = LED_BLINK;
@@ -275,7 +275,7 @@ static void subscribeToCloud(void)
 void loadCustomMosquittoEndpoint(void)
 {
     memset(mosquittoEndpoint, '\0', MOSQUITTO_ENDPOINT_LEN);
-    sprintf(mosquittoEndpoint, "%s", CFG_MQTT_HOSTURL);
+    sprintf(mosquittoEndpoint, "%s", eeprom->mqttAddress);
     debug_printIoTAppMsg("Custom Mosquitto Endpoint is used : %s", mosquittoEndpoint);
 }
 #else

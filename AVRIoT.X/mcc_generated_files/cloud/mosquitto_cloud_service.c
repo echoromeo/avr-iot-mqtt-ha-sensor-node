@@ -44,7 +44,7 @@
 #include "../winc/common/winc_defines.h"
 #include "../winc/m2m/m2m_ssl.h"
 #include "../config/cloud_config.h"
-
+#include "../credentials_storage/credentials_storage.h"
 
 publishReceptionHandler_t imqtt_publishReceiveCallBackTable[NUM_TOPICS_SUBSCRIBE];
 
@@ -93,7 +93,7 @@ int8_t CLOUD_connectSocket(uint32_t ipAddress)
         struct bsd_sockaddr_in addr;
         
         addr.sin_family = PF_INET;
-        addr.sin_port = BSD_htons(CFG_MQTT_PORT);
+        addr.sin_port = BSD_htons(eeprom->mqttPort);
         addr.sin_addr.s_addr = ipAddress;
         
         mqttContext  *context = MQTT_GetClientConnectionInfo();
