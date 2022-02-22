@@ -59,9 +59,6 @@ SOFTWARE.
 #define SW1_TOGGLE_STATE	   SW1_GetValue()
 #define TOGGLE_ON  1
 #define TOGGLE_OFF 0
-//#define DEVICE_SHADOW_INIT_INTERVAL 1000L
-//#define UPDATE_DEVICE_SHADOW_BUFFER_TIME (2)
-//#define AWS_MCHP_SANDBOX_URL "a1gqt8sttiign3.iot.us-east-2.amazonaws.com"
 
 // This will contain the device ID, before we have it this dummy value is the init value which is non-0
 char attDeviceID[20] = "BAAAAADD1DBAAADD1D";
@@ -72,12 +69,10 @@ static uint8_t holdCount = 0;
 uint32_t MAIN_dataTask(void *payload);
 timerStruct_t MAIN_dataTasksTimer = {MAIN_dataTask};
 
-static void  wifiConnectionStateChanged(uint8_t status);
+static void wifiConnectionStateChanged(uint8_t status);
 static void sendToCloud(void);
 static void subscribeToCloud(void);
 static void receivedFromCloud(uint8_t *topic, uint8_t *payload);
-uint32_t initDeviceShadow(void *payload);
-timerStruct_t initDeviceShadowTimer = {initDeviceShadow};
 #if USE_CUSTOM_ENDPOINT_URL
 void loadCustomMosquittoEndpoint(void);
 #else
@@ -285,9 +280,10 @@ void loadDefaultMosquittoEndpoint(void)
     wifi_readMosquittoEndpointFromWinc();
     if(((uint8_t)mosquittoEndpoint[0]) == 0xFF)
     {
-        sprintf(mosquittoEndpoint, "%s", AWS_MCHP_SANDBOX_URL);
-        debug_printIoTAppMsg("Using the Mosquitto endpoint : %s", mosquittoEndpoint);
+		debug_printError("APP: MosquittoEndpointFromWinc failed");
+        sprintf(mosquittoEndpoint, "%s", eeprom->mqttAddress);
     }
+    debug_printIoTAppMsg("Using the Mosquitto endpoint : %s", mosquittoEndpoint);
 }
 #endif
 
