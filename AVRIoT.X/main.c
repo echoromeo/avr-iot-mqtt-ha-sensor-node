@@ -49,7 +49,10 @@
 #include "mcc_generated_files/cloud/cloud_service.h"
 #include "mcc_generated_files/cloud/mqtt_service.h"
 
-char mqttSubscribeTopic[SUBSCRIBE_TOPIC_SIZE];
+static char mqttSubscribeTopic[SUBSCRIBE_TOPIC_SIZE];
+static char lightandtemperaturetopic[PUBLISH_TOPIC_SIZE];
+static char json[PAYLOAD_SIZE];
+
 static uint8_t holdCount = 0;
 
 int main(void)
@@ -64,26 +67,21 @@ int main(void)
 	return 0;
 }
 
-// This will get called every 1 second only while we have a valid Cloud connection
+// This will get called every CFG_SEND_INTERVAL while we have a valid Cloud connection
 void sendToCloud(void)
 {
-	static char json[PAYLOAD_SIZE];
-	static char publishMqttTopic[PUBLISH_TOPIC_SIZE];
 	int rawTemperature = 0;
 	int light = 0;
 	int len = 0;
-	memset((void*)publishMqttTopic, 0, sizeof(publishMqttTopic));
-	sprintf(publishMqttTopic, "test/sensors");
-	// This part runs every CFG_SEND_INTERVAL seconds
+
 	if (shared_networking_params.haveAPConnection)
 	{
 		rawTemperature = SENSORS_getTempValue();
 		light = SENSORS_getLightValue();
-		len = sprintf(json,"{\"Light\":%d,\"Temp\":%d.%02d}", light,rawTemperature/100,abs(rawTemperature)%100);
-	}
-	if (len >0)
-	{
-		CLOUD_publishData((uint8_t*)publishMqttTopic ,(uint8_t*)json, len);
+		len = sprintf(json,"{\"light\":%d,\"temp\":%d.%02d}", light,rawTemperature/100,abs(rawTemperature)%100);
+
+		sprintf(lightandtemperaturetopic, "%s/sensor", eeprom->mqttCID); // Can optimize this a lot if never changing CID
+		CLOUD_publishData((uint8_t*)lightandtemperaturetopic ,(uint8_t*)json, len);
 		if (holdCount)
 		{
 			holdCount--;
@@ -99,7 +97,7 @@ void sendToCloud(void)
 
 void subscribeToCloud(void)
 {
-	sprintf(mqttSubscribeTopic, "avr/blink");
+	sprintf(mqttSubscribeTopic, "%s/test", eeprom->mqttCID); // Can optimize this a lot if never changing CID
 	CLOUD_registerSubscription((uint8_t*)mqttSubscribeTopic,receivedFromCloud);
 }
 
