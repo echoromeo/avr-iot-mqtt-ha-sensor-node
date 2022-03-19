@@ -5,18 +5,10 @@ The aim here is to set up the AVR-IoT with two [MQTT Sensors](https://www.home-a
 Connect to the COM port of the AVR IoT and use the CLI to configure wifi, mqtt connection and credentials (9600 BAUD).
 Any terminal with serial support can be used, I like the [MPLAB Data Visualizer](https://www.microchip.com/en-us/tools-resources/debug/mplab-data-visualizer) a lot, at least if you want to output a lot of raw data from the MCU
 
-The discovery should replace the need to add this in configuration.yaml:
+## This is how it pops up in Home Assistant
 
-```yaml
-sensor:
-- platform: mqtt
-    name: "AVR.IoT Temperature"
-    state_topic: "homeassistant/sensor/<thing name>/state"
-    unit_of_measurement: "°C"
-    value_template: "{{ value_json.temp }}"
-- platform: mqtt
-    name: "AVR.IoT Light"
-    state_topic: "homeassistant/sensor/<thing name>/state"
-    unit_of_measurement: "lx"
-    value_template: "{{ value_json.light }}"
-```
+![device](images/ha_device.png)
+
+## The debug info looks like this
+
+![debug_info](images/ha_debug_info.png)
